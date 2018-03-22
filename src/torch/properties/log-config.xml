@@ -1,0 +1,11 @@
+<blog4go minlevel="debug">
+    <filter levels="info" colored="true">
+        <rotatefile path="/data/service/logs/torch/info.log" type="size" rotateSize="500000" rotateLines="8000000"></rotatefile>
+    </filter>
+    <filter levels="debug,warn" colored="true">
+        <rotatefile path="/data/service/logs/torch/debug.log" type="size" rotateSize="500000" rotateLines="8000000"></rotatefile>
+    </filter>
+    <filter levels="error,critical">
+        <rotatefile path="/data/service/logs/torch/error.log" type="size" rotateSize="500000" rotateLines="8000000"></rotatefile>
+    </filter>
+</blog4go>
