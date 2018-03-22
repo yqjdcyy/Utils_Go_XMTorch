@@ -1,6 +1,7 @@
 package server
 
 import (
+	"strings"
 	"bitbucket.org/ansenwork/ilog"
 	"config"
 	"encoding/json"
@@ -11,7 +12,17 @@ import (
 	"utils"
 	"io/ioutil"
 	"strconv"
+	"bufio"
 )
+var (
+	// Format 日期格式
+	Format string
+)
+
+func init() {
+	Format = "2006-01-02"
+}
+
 
 // Circulate 递归查询
 func Circulate(from, to time.Time, url string) {
@@ -147,4 +158,129 @@ func convert(res *RentDetailRes) string {
 	}
 
 	return string(bs)
+}
+
+
+// CalcByMonth 时长统计图
+func CalcByMonth(path string){
+
+	// init
+	resp:= new(RentDetailLocal)
+	durations:= make(map[int]int)
+
+	// read
+	file, err:=utils.Open(path)
+	if nil!= err{
+		ilog.Errorf("fail to open file[%s]: %s", path, err.Error())
+		return
+	}
+	defer file.Close()
+	scanner:= bufio.NewScanner(file)
+	for scanner.Scan() {
+		
+		// read
+		str:= scanner.Text()
+
+		// check
+		size:= len(str)
+		if 2>= size{
+			continue
+		}
+
+		// convert
+		str= str[1:size-1]
+		err:= json.Unmarshal([]byte(str), resp)
+		if nil!= err{
+			ilog.Errorf("fail to unmarshal data[%s] to RentDetailLocal: %s", str, err.Error())
+			continue
+		}
+
+		// fill
+		duration:= calcDuration(resp.From, resp.To)
+		cnt, ok:= durations[duration]
+		if !ok{
+			cnt= 0
+		}
+		durations[duration]= cnt+ 1
+	}
+
+	// template.fill
+	path, err= saveTemplateAs(&durations)
+	if nil!= err{
+		return
+	}
+
+	// open
+	if err= utils.OpenURI(path); nil!= err{
+		ilog.Errorf("fail to open URI[%s]: %s", path, err.Error())
+	}
+}
+
+func calcDuration(from, to string) int{
+
+	// check
+	if 10> len(from) || 10> len(to){
+		return -1
+	}
+	tf, err := time.Parse(Format, from[0:10])
+	if nil != err {
+		return -1
+	}
+	tt, err := time.Parse(Format, to[0:10])
+	if nil != err {
+		return -1
+	}
+
+	duration:= (tt.Year()- tf.Year())* 12+ (int(tt.Month()))- (int(tt.Month()))
+	if duration< -1{
+		ilog.Debugf("from:\t%v\nto:\t%v", from ,to)
+	}
+
+	return duration
+}
+
+func saveTemplateAs(durations *map[int]int) (string, error){
+
+	// init
+	var datas, labels string
+	template := config.Gateway.TemplateDuration
+	path:= fmt.Sprintf("%s/%s.html", config.Gateway.Path, uuid.New().String())
+
+	// range
+	for k:= range (*durations){
+		labels+= fmt.Sprintf("\"%d个月\",", k)
+		v, _:= (*durations)[k]
+		datas+= fmt.Sprintf("%d,", v)
+
+		ilog.Debugf("duration[%v]= %v", k, v)
+	}
+
+	// file.read
+	file, err:= utils.Open(template)
+	if nil!= err{
+		ilog.Errorf("fail to open template[%s]: %s", template, err.Error())
+		return "", err
+	}
+	bs, err:= ioutil.ReadAll(file)
+	if nil!= err{
+		ilog.Errorf("fail to open template[%s]: %s", template, err.Error())
+		return "", err
+	}
+	file.Close()
+
+	// body.replace
+	content:= string(bs)
+	content= strings.Replace(content, "{{data}}", datas[0:len(datas)-1], -1)
+	content= strings.Replace(content, "{{label}}", labels[0:len(labels)-1], -1)
+
+	// saveAs
+	file, err= utils.OpenOrCreate(path)
+	if nil!= err{
+		ilog.Errorf("fail to save html[%s]: %s", path, err.Error())
+		return "", err
+	}
+	defer file.Close()
+	file.WriteString(content)
+
+	return path, nil
 }

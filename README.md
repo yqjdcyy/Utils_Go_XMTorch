@@ -10,5 +10,6 @@
 ## Statistic
 - read
 - handle
-- chart 
-    - TODO
+- chart
+    - duration
+    - company

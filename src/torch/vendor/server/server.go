@@ -21,13 +21,14 @@ func PrintConfig() {
 	ilog.Infof("%v", config.Gateway.Interval)
 	ilog.Infof("%v", config.Gateway.UrlRentDetail)
 	ilog.Infof("%v", config.Gateway.Cookie)
+	ilog.Infof("%v", config.Gateway.StatisticPath)
 }
 
 
 // StatisticByMonth 申请时长角度
 func StatisticByMonth(){
 
-	ilog.Info("TODO")
+	CalcByMonth(config.Gateway.StatisticPath)
 }
 // StatisticByCompany 公司角度
 func StatisticByCompany(){
