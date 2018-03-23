@@ -41,4 +41,4 @@
         - ![企业通过与不通过.png](http://otzm88f21.bkt.clouddn.com/48e0b22a-0bdb-4d6c-858c-05fa6cfbbc72.png)
         - ![企业角度通过情况.png](http://otzm88f21.bkt.clouddn.com/b1b97b6a-1ad2-4c0a-965d-5ef85e0d51cf.png)
         - ![企业通过与不通过数据.png](http://otzm88f21.bkt.clouddn.com/f2412135-9ca5-4abd-967e-ccfa7d6666a5.png)
-- 
+- 自动打开网页
