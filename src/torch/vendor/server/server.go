@@ -22,6 +22,8 @@ func PrintConfig() {
 	ilog.Infof("%v", config.Gateway.UrlRentDetail)
 	ilog.Infof("%v", config.Gateway.Cookie)
 	ilog.Infof("%v", config.Gateway.StatisticPath)
+	ilog.Infof("%v", config.Gateway.TemplateDuration)
+	ilog.Infof("%v", config.Gateway.TemplateCompany)
 }
 
 
@@ -33,5 +35,5 @@ func StatisticByMonth(){
 // StatisticByCompany 公司角度
 func StatisticByCompany(){
 
-	ilog.Info("TODO")
+	CalcByCompany(config.Gateway.StatisticPath)
 }

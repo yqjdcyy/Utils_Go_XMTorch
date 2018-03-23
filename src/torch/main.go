@@ -18,7 +18,7 @@ func init() {
 	flag.IntVar(
 		&Choice,
 		"choice",
-		2,
+		3,
 		"功能选择\n\t0:\t打印配置项\n\t1:\t使用配置进行数据下载\n\t2:\t报表-等待月时\n\t3:\t报表-公司角度")
 	flag.Parse()
 }

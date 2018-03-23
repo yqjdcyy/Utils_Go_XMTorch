@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+	<title>企业通过与不通过</title>
+	<script src="http://www.chartjs.org/dist/2.7.2/Chart.bundle.js"></script>
+	<script src="http://www.chartjs.org/samples/latest/utils.js"></script>
+	<style>
+	canvas {
+		-moz-user-select: none;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+	}
+	</style>
+</head>
+
+<body>
+	<div style="width: 90%">
+		<canvas id="canvas"></canvas>
+	</div>
+	<script>
+
+        var labels= [{{labels}}]
+        var pass=[{{pass}}]
+        var unPass=[{{unPass}}]
+
+		var barChartData = {
+			labels: [],
+			datasets: [{
+				label: 'Pass',
+				backgroundColor: window.chartColors.red,
+				stack: 'Stack 0',
+				data: []
+			}, {
+				label: 'UnPass',
+				backgroundColor: window.chartColors.blue,
+				stack: 'Stack 0',
+				data: []
+			}]
+
+		};
+		window.onload = function() {
+            
+            for(var i=0; i< labels.length; i++){
+                barChartData.labels.push(labels[i]);
+                barChartData.datasets[0].data.push(pass[i]);
+                barChartData.datasets[1].data.push(unPass[i]);
+            }
+			var ctx = document.getElementById('canvas').getContext('2d');
+
+			window.myBar = new Chart(ctx, {
+				type: 'bar',
+				data: barChartData,
+				options: {
+					title: {
+						display: true,
+						text: ''
+					},
+					tooltips: {
+						mode: 'index',
+						intersect: false
+					},
+					responsive: true,
+					scales: {
+						xAxes: [{
+							stacked: true,
+						}],
+						yAxes: [{
+							stacked: true
+						}]
+					}
+				}
+			});
+		};
+	</script>
+</body>
+</html>

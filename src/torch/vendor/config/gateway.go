@@ -35,6 +35,7 @@ type GatewayConfig struct {
 
 	// template
 	TemplateDuration string
+	TemplateCompany string
 }
 
 func (g *GatewayConfig) init(c *ConfigFile) {
@@ -82,4 +83,6 @@ func (g *GatewayConfig) init(c *ConfigFile) {
 
 	// template
 	g.TemplateDuration= c.GetStringDefault("template", "duration", "")
+	g.TemplateCompany= c.GetStringDefault("template", "company", "")
+	
 }

@@ -205,7 +205,7 @@ func CalcByMonth(path string){
 	}
 
 	// template.fill
-	path, err= saveTemplateAs(&durations)
+	path, err= saveDurationAs(&durations)
 	if nil!= err{
 		return
 	}
@@ -239,12 +239,86 @@ func calcDuration(from, to string) int{
 	return duration
 }
 
-func saveTemplateAs(durations *map[int]int) (string, error){
+
+// CalcByCompany 公司统计图
+func CalcByCompany(path string){
+
+	// init
+	resp:= new(RentDetailLocal)
+	companys:= make(map[string]PassUn)
+
+	// read
+	file, err:=utils.Open(path)
+	if nil!= err{
+		ilog.Errorf("fail to open file[%s]: %s", path, err.Error())
+		return
+	}
+	defer file.Close()
+	scanner:= bufio.NewScanner(file)
+	for scanner.Scan() {
+		
+		// read
+		str:= scanner.Text()
+
+		// check
+		size:= len(str)
+		if 2>= size{
+			continue
+		}
+
+		// convert
+		str= str[1:size-1]
+		err:= json.Unmarshal([]byte(str), resp)
+		if nil!= err{
+			ilog.Errorf("fail to unmarshal data[%s] to RentDetailLocal: %s", str, err.Error())
+			continue
+		}
+
+		// fill
+		k:= resp.Company
+		pass:= 0
+		unPass:= 0
+		if 0!= len(resp.To){
+			pass=1
+		}else{
+			unPass= 1
+		}
+		if v, ok:= companys[k]; !ok{
+			companys[k]= PassUn{
+				Pass: pass,
+				UnPass: unPass,
+			}
+		}else{
+			v.Pass= v.Pass+ pass
+			v.UnPass= v.UnPass+ unPass
+			companys[k]= v
+		}
+	}
+
+	// template.fill
+	path, err= saveCompanyAs(&companys)
+	if nil!= err{
+		return
+	}
+
+	// open
+	if err= utils.OpenURI(path); nil!= err{
+		ilog.Errorf("fail to open URI[%s]: %s", path, err.Error())
+	}
+}
+
+// PassUn 通过与否数量
+type PassUn struct{
+	Pass int `json:"pass"`
+	UnPass int `json:"unPass"`
+}
+
+func saveDurationAs(durations *map[int]int) (string, error){
 
 	// init
 	var datas, labels string
 	template := config.Gateway.TemplateDuration
-	path:= fmt.Sprintf("%s/%s.html", config.Gateway.Path, uuid.New().String())
+	path:= fmt.Sprintf("%s/duration-%s.html", config.Gateway.Path, uuid.New().String())
 
 	// range
 	for k:= range (*durations){
@@ -272,6 +346,67 @@ func saveTemplateAs(durations *map[int]int) (string, error){
 	content:= string(bs)
 	content= strings.Replace(content, "{{data}}", datas[0:len(datas)-1], -1)
 	content= strings.Replace(content, "{{label}}", labels[0:len(labels)-1], -1)
+
+	// saveAs
+	file, err= utils.OpenOrCreate(path)
+	if nil!= err{
+		ilog.Errorf("fail to save html[%s]: %s", path, err.Error())
+		return "", err
+	}
+	defer file.Close()
+	file.WriteString(content)
+
+	return path, nil
+}
+
+
+func saveCompanyAs(companys *map[string]PassUn) (string, error){
+
+	// init
+	var labels, pass, unpass string
+	template := config.Gateway.TemplateCompany
+	path:= fmt.Sprintf("%s/company-%s.html", config.Gateway.Path, uuid.New().String())
+
+	// order
+
+	// range
+	for k:= range (*companys){
+
+		// init
+		v, _:= (*companys)[k]
+
+		// filter
+		if  2>=v.Pass || 5>= (v.Pass+ v.UnPass){
+			continue
+		}
+
+		// save
+		labels+= fmt.Sprintf("\"%s\",", k)
+		pass+= fmt.Sprintf("%d,", v.Pass)
+		unpass+= fmt.Sprintf("%d,", v.UnPass)
+
+		// info
+		ilog.Debugf("%s=\t%3d+\t%3d", k, v.Pass, v.UnPass)
+	}
+
+	// file.read
+	file, err:= utils.Open(template)
+	if nil!= err{
+		ilog.Errorf("fail to open template[%s]: %s", template, err.Error())
+		return "", err
+	}
+	bs, err:= ioutil.ReadAll(file)
+	if nil!= err{
+		ilog.Errorf("fail to open template[%s]: %s", template, err.Error())
+		return "", err
+	}
+	file.Close()
+
+	// body.replace
+	content:= string(bs)
+	content= strings.Replace(content, "{{labels}}", labels[0:len(labels)-1], -1)
+	content= strings.Replace(content, "{{pass}}", pass[0:len(pass)-1], -1)
+	content= strings.Replace(content, "{{unPass}}", unpass[0:len(unpass)-1], -1)
 
 	// saveAs
 	file, err= utils.OpenOrCreate(path)
