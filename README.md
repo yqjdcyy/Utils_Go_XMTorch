@@ -32,7 +32,7 @@
     - 时长
         - [申请耗时分布图.html](http://doc.yqjdcyy.com/a04f2148-9a27-4994-9591-81193a910831.html)
         - ![申请耗时分布图.png](http://doc.yqjdcyy.com/6b2aefdf-00f1-4657-83b3-460b04ea4709.png)
-        - ![申请耗时分布数据.png](http://otzm88f21.bkt.clouddn.com/7bc17b28-d53f-466c-84a2-45c2dd1a1363.png)
+        - ![申请耗时分布数据.png](http://doc.yqjdcyy.com/7bc17b28-d53f-466c-84a2-45c2dd1a1363.png)
     - 企业
         - 补充过滤条件
             - 通过3人以上
